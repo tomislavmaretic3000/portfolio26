@@ -21,11 +21,18 @@ export default function HeroSlideshow({ ready, onSlideChange }: Props) {
   const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scheduleAutoRef = useRef<() => void>(() => {})
 
-  // One ref per slide: the outer wrapper (for clip-path) and inner img wrapper (for pan)
   const wrapperRefs = useRef<Array<HTMLDivElement | null>>([])
   const panRefs = useRef<Array<HTMLDivElement | null>>([])
 
   useEffect(() => { readyRef.current = ready }, [ready])
+
+  // Called directly from GSAP — no React render cycle gap
+  const startIdlePan = useCallback((index: number) => {
+    const pan = panRefs.current[index]
+    if (!pan) return
+    gsap.killTweensOf(pan)
+    gsap.fromTo(pan, { xPercent: 0 }, { xPercent: 5, duration: AUTO_MS / 1000, ease: 'power2.out' })
+  }, [])
 
   const go = useCallback((direction: 'next' | 'prev') => {
     if (animatingRef.current || !readyRef.current) return
@@ -44,9 +51,8 @@ export default function HeroSlideshow({ ready, onSlideChange }: Props) {
 
     animatingRef.current = true
 
-    // Incoming slide: hidden by clipPath, starts slightly shifted right for pan effect
     gsap.set(inWrap, { opacity: 1, zIndex: 2, clipPath: 'inset(0 100% 0 0)' })
-    gsap.set(inPan, { xPercent: 3 })
+    gsap.set(inPan, { xPercent: -5 })
 
     const tl = gsap.timeline({
       onComplete() {
@@ -56,19 +62,19 @@ export default function HeroSlideshow({ ready, onSlideChange }: Props) {
         setCurrent(to)
         onSlideChange(to)
         animatingRef.current = false
+        // Fire idle pan immediately — no React state cycle, no gap
+        startIdlePan(to)
         scheduleAutoRef.current()
       },
     })
 
-    // Wipe reveal (clip-path)
+    // Clip-path wipe
     tl.to(inWrap, { clipPath: 'inset(0 0% 0 0)', duration: 1.1, ease: 'power4.out' }, 0)
-
-    // Pan in: incoming image drifts to neutral
-    tl.to(inPan, { xPercent: 0, duration: 1.6, ease: 'power3.out' }, 0)
-
-    // Pan out: outgoing image continues drifting left slightly
-    tl.to(panRefs.current[from], { xPercent: -2, duration: 1.1, ease: 'power3.out' }, 0)
-  }, [onSlideChange])
+    // Incoming image drifts right into neutral (linear so velocity is steady at join)
+    tl.to(inPan, { xPercent: 0, duration: 1.4, ease: 'linear' }, 0)
+    // Outgoing image continues drifting right
+    tl.to(panRefs.current[from], { xPercent: 4, duration: 1.2, ease: 'power3.out' }, 0)
+  }, [onSlideChange, startIdlePan])
 
   const scheduleAuto = useCallback(() => {
     if (autoRef.current) clearTimeout(autoRef.current)
@@ -77,30 +83,19 @@ export default function HeroSlideshow({ ready, onSlideChange }: Props) {
 
   useEffect(() => { scheduleAutoRef.current = scheduleAuto }, [scheduleAuto])
 
-  // Entry animation + start idle pan on first slide
+  // Entry: start pan + auto immediately from GSAP, no React dependency on current
   useEffect(() => {
     if (!ready) return
 
     const wrap0 = wrapperRefs.current[0]
-    const pan0 = panRefs.current[0]
-    if (!wrap0 || !pan0) return
+    if (!wrap0) return
 
     gsap.set(wrap0, { opacity: 1, zIndex: 1 })
-
-    // Slow rightward idle pan on active slide
-    gsap.fromTo(pan0, { xPercent: 0 }, { xPercent: -2, duration: AUTO_MS / 1000, ease: 'none' })
-
+    startIdlePan(0)
     scheduleAuto()
-    return () => { if (autoRef.current) clearTimeout(autoRef.current) }
-  }, [ready, scheduleAuto])
 
-  // Idle pan on current slide while it's active
-  useEffect(() => {
-    const pan = panRefs.current[current]
-    if (!pan || !ready) return
-    gsap.killTweensOf(pan)
-    gsap.fromTo(pan, { xPercent: 0 }, { xPercent: -2, duration: AUTO_MS / 1000, ease: 'none' })
-  }, [current, ready])
+    return () => { if (autoRef.current) clearTimeout(autoRef.current) }
+  }, [ready, scheduleAuto, startIdlePan])
 
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ background: '#111' }}>
@@ -111,11 +106,10 @@ export default function HeroSlideshow({ ready, onSlideChange }: Props) {
           className="absolute inset-0"
           style={{ opacity: i === 0 ? 1 : 0, zIndex: i === 0 ? 1 : 0 }}
         >
-          {/* Inner div scales/pans independently */}
           <div
             ref={(el) => { panRefs.current[i] = el }}
             className="absolute inset-0"
-            style={{ width: '106%', left: '-3%', willChange: 'transform' }}
+            style={{ width: '112%', left: '-6%', willChange: 'transform' }}
           >
             <Image
               src={slide.img}
