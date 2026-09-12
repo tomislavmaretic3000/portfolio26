@@ -164,17 +164,15 @@ export default function HeroLeft({ ready, currentSlide }: Props) {
           data-reveal=""
           style={{
             fontFamily: FONT,
-            fontWeight: 400,
-            fontSize: 'clamp(2.2rem, 4.2vw, 6rem)',
+            fontWeight: 300,
+            fontSize: 'clamp(1.76rem, 3.36vw, 4.8rem)',
             lineHeight: 1.05,
             letterSpacing: '-0.03em',
             color: 'var(--fg)',
             opacity: 0,
           }}
         >
-          Design consultant
-          <br />
-          {/* Cycling word row */}
+          Designer{' '}
           <span
             style={{
               display: 'inline-block',
@@ -188,44 +186,12 @@ export default function HeroLeft({ ready, currentSlide }: Props) {
             />
           </span>
           <br />
-          apps &amp; brands
+          products and experiences
         </h1>
       </div>
 
-      {/* Bottom: project info + nav */}
+      {/* Bottom: nav */}
       <div>
-        <div
-          data-reveal=""
-          style={{ height: '1px', background: 'var(--fg-muted)', marginBottom: '1.5rem', opacity: 0 }}
-        />
-
-        <div style={{ overflow: 'hidden', marginBottom: '0.4rem' }}>
-          <span
-            ref={catRef}
-            style={{
-              display: 'block',
-              fontFamily: FONT,
-              fontSize: '0.6rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'var(--fg)',
-            }}
-          />
-        </div>
-        <div style={{ overflow: 'hidden', marginBottom: '2rem' }}>
-          <span
-            ref={titleRef}
-            style={{
-              display: 'block',
-              fontFamily: FONT,
-              fontWeight: 600,
-              fontSize: '0.875rem',
-              color: 'var(--fg)',
-              letterSpacing: '0.02em',
-            }}
-          />
-        </div>
-
         <ul
           className="flex items-center gap-7"
           data-reveal=""

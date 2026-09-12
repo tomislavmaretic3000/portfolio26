@@ -13,16 +13,19 @@ export default function Home() {
     <>
       <Loader onComplete={() => setReady(true)} />
 
-      {/* Split layout — full viewport */}
-      <div className="fixed inset-0 flex">
-        {/* Left panel — 42% */}
-        <div className="h-full" style={{ width: '42%', flexShrink: 0 }}>
-          <HeroLeft ready={ready} currentSlide={currentSlide} />
-        </div>
+      {/* Outer padding frame */}
+      <div className="fixed inset-0 flex" style={{ padding: '48px' }}>
+        {/* Split layout fills padded area */}
+        <div className="flex flex-1 h-full overflow-hidden" style={{ borderRadius: '16px' }}>
+          {/* Left panel — 42% */}
+          <div className="h-full" style={{ width: '42%', flexShrink: 0 }}>
+            <HeroLeft ready={ready} currentSlide={currentSlide} />
+          </div>
 
-        {/* Right panel — 58% */}
-        <div className="h-full" style={{ width: '58%' }}>
-          <HeroSlideshow ready={ready} onSlideChange={setCurrentSlide} />
+          {/* Right panel — 58%, rounded corners inherited from parent clip */}
+          <div className="h-full overflow-hidden" style={{ width: '58%', borderRadius: '16px' }}>
+            <HeroSlideshow ready={ready} onSlideChange={setCurrentSlide} />
+          </div>
         </div>
       </div>
     </>
