@@ -15,15 +15,18 @@ export default function Home() {
 
       {/* Outer padding frame */}
       <div className="fixed inset-0 flex" style={{ padding: '48px' }}>
-        {/* Split layout fills padded area */}
+        {/* Split layout — left fills remaining space, right is always 1:1 square */}
         <div className="flex flex-1 h-full overflow-hidden" style={{ borderRadius: '16px' }}>
-          {/* Left panel — 42% */}
-          <div className="h-full" style={{ width: '42%', flexShrink: 0 }}>
+          {/* Left panel — fills remaining width */}
+          <div className="flex-1 h-full min-w-0">
             <HeroLeft ready={ready} currentSlide={currentSlide} />
           </div>
 
-          {/* Right panel — 58%, rounded corners inherited from parent clip */}
-          <div className="h-full overflow-hidden" style={{ width: '58%', borderRadius: '16px' }}>
+          {/* Right panel — square based on container height */}
+          <div
+            className="h-full overflow-hidden flex-shrink-0"
+            style={{ aspectRatio: '1 / 1', borderRadius: '16px' }}
+          >
             <HeroSlideshow ready={ready} onSlideChange={setCurrentSlide} />
           </div>
         </div>
